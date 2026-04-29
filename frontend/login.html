@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bookinn</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="auth-layout">
+    <div class="auth-brand">
+      <img src="/images/image 4.png" style="width:120px; height:120px; object-fit:contain;">
+      <h1>bookinn.</h1>
+      <p>vive mientras lee</p>
+    </div>
+
+    <div class="auth-form-side">
+      <!-- Vista login -->
+      <div id="vista-login">
+        <p class="subtitle">Bienvenido de nuevo</p>
+        <h2>Inicia sesión</h2>
+        <div id="alert-login" class="alert"></div>
+        <div class="form-group">
+          <label>Usuario</label>
+          <input type="text" id="login-usuario" placeholder="Escribe acá">
+        </div>
+        <div class="form-group">
+          <label>Contraseña</label>
+          <input type="password" id="login-password" placeholder="Escribe acá">
+        </div>
+        <button class="btn-primary" id="btn-login">Next →</button>
+        <p class="auth-footer">¿Aún no tienes una cuenta? <a onclick="mostrarRegister()">regístrate acá</a></p>
+      </div>
+
+      <!-- Vista register -->
+      <div id="vista-register">
+        <p class="subtitle">Crea una cuenta</p>
+        <h2>Regístrate</h2>
+        <div id="alert-register" class="alert"></div>
+        <div class="form-group">
+          <label>Usuario</label>
+          <input type="text" id="reg-usuario" placeholder="Escribe acá">
+        </div>
+        <div class="form-group">
+          <label>Contraseña</label>
+          <input type="password" id="reg-password" placeholder="Escribe acá">
+        </div>
+        <button class="btn-primary" id="btn-register">Next →</button>
+        <p class="auth-footer">¿Ya tienes una cuenta? <a onclick="mostrarLogin()">Inicia sesión</a></p>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script>
+    document.getElementById('vista-register').style.display = 'none';
+    // Si ya hay sesión, ir directo a la app
+    if (localStorage.getItem('token')) window.location.href = 'index.html';
+
+    function mostrarLogin() {
+      document.getElementById('vista-login').style.display = 'flex';
+      document.getElementById('vista-register').style.display = 'none';
+    }
+
+    function mostrarRegister() {
+      document.getElementById('vista-login').style.display = 'none';
+      document.getElementById('vista-register').style.display = 'flex';
+    }
+
+    document.getElementById('btn-login').addEventListener('click', async () => {
+      const usuario = document.getElementById('login-usuario').value.trim();
+      const password = document.getElementById('login-password').value.trim();
+      const alertEl = document.getElementById('alert-login');
+      alertEl.className = 'alert';
+
+      if (!usuario || !password) {
+        alertEl.textContent = 'Completá todos los campos.';
+        alertEl.className = 'alert error'; return;
+      }
+      try {
+        const res = await fetch('http://localhost:3000/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ usuario, password })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('empleado', JSON.stringify(data.empleado));
+          window.location.href = 'index.html';
+        } else {
+          alertEl.textContent = data.error || 'Credenciales incorrectas.';
+          alertEl.className = 'alert error';
+        }
+      } catch(e) {
+        alertEl.textContent = 'No se pudo conectar con el servidor.';
+        alertEl.className = 'alert error';
+      }
+    });
+
+    document.getElementById('btn-register').addEventListener('click', async () => {
+      const usuario = document.getElementById('reg-usuario').value.trim();
+      const password = document.getElementById('reg-password').value.trim();
+      const alertEl = document.getElementById('alert-register');
+      alertEl.className = 'alert';
+
+      if (!usuario || !password) {
+        alertEl.textContent = 'Completá todos los campos.';
+        alertEl.className = 'alert error'; return;
+      }
+      try {
+        const res = await fetch('http://localhost:3000/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ usuario, password })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          alertEl.textContent = '¡Cuenta creada! Iniciando sesión...';
+          alertEl.className = 'alert success';
+          setTimeout(() => mostrarLogin(), 1500);
+        } else {
+          alertEl.textContent = data.error || 'Error al crear la cuenta.';
+          alertEl.className = 'alert error';
+        }
+      } catch(e) {
+        alertEl.textContent = 'No se pudo conectar con el servidor.';
+        alertEl.className = 'alert error';
+      }
+    });
+
+    document.addEventListener('keydown', e => {
+      if (e.key !== 'Enter') return;
+      const loginVisible = document.getElementById('vista-login').style.display !== 'none';
+      if (loginVisible) document.getElementById('btn-login').click();
+      else document.getElementById('btn-register').click();
+    });
+  </script>
+</body>
+</html>
