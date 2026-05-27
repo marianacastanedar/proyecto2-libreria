@@ -1,6 +1,6 @@
-# Bookinn — Proyecto 2: Gestión de Inventario y Ventas
+# Bookinn — Proyecto 3: Seguridad, Roles y Stored Procedures
 
-Aplicación web para gestionar el inventario y las ventas de una librería. Desarrollada con PostgreSQL, Node.js (Express) y HTML/CSS/JS vanilla, desplegada mediante Docker.
+Aplicación web para gestionar el inventario y ventas de una librería. Construida con PostgreSQL, Node.js (Express + Prisma) y HTML/CSS/JS vanilla, desplegada con Docker.
 
 ---
 
@@ -13,41 +13,44 @@ Aplicación web para gestionar el inventario y las ventas de una librería. Desa
 ## Levantar el proyecto
 
 ```bash
-# 1. Clonar el repositorio
 git clone https://github.com/marianacastanedar/proyecto2-libreria.git
 cd proyecto2-libreria
-
-# 2. Crear el archivo de variables de entorno
+git checkout proyecto-3
 cp .env.example .env
-
-# 3. Levantar todos los servicios
 docker compose up --build
 ```
 
-La base de datos se inicializa automáticamente con tablas y datos de prueba al primer arranque.
+La base de datos se inicializa automáticamente con tablas, roles, stored procedures y datos de prueba.
 
 ---
 
 ## Acceso
 
-| Servicio  | URL                          |
-|-----------|------------------------------|
-| Frontend  | http://localhost:8888/login.html |
-| Backend   | http://localhost:3000        |
-| Base de datos | localhost:5434           |
+| Servicio | URL |
+|---|---|
+| Frontend | http://localhost:8888/login.html |
+| Backend | http://localhost:3000 |
+| Base de datos | localhost:5434 |
 
 ---
 
-## Credenciales de prueba
+## Credenciales de base de datos
 
-**Aplicación (login):**
-- Usuario: `Carlos`
-- Contraseña: `pass123`
-
-**Base de datos:**
-- Usuario: `proy2`
+- Usuario: `proy3`
 - Contraseña: `secret`
 - Base de datos: `libreria`
+
+---
+
+## Usuarios de prueba
+
+| Usuario | Contraseña | Accede a |
+|---|---|---|
+| `cajero_test` | `pass123` | Ventas, Clientes |
+| `vendedor_test` | `pass123` | Productos, Ventas, Clientes |
+| `rrhh_test` | `pass123` | Empleados |
+| `marketing_test` | `pass123` | Productos, Proveedores |
+| `financiero_test` | `pass123` | Reportes, Ventas |
 
 ---
 
@@ -58,17 +61,22 @@ proyecto2-libreria/
 ├── docker-compose.yml
 ├── .env.example
 ├── database/
-│   └── init.sql          # DDL + datos de prueba
+│   ├── 01_schema.sql       # ddl tablas e indices
+│   ├── 02_roles_db.sql     # create role grant revoke
+│   ├── 03_procedures.sql   # 5 stored procedures
+│   └── 04_seed.sql         # datos de prueba
 ├── backend/
 │   ├── Dockerfile
 │   ├── package.json
-│   └── index.js          # API REST con Express
+│   ├── index.js            # api rest con express y prisma
+│   └── prisma/
+│       └── schema.prisma   # modelos orm
 └── frontend/
     ├── Dockerfile
     ├── nginx.conf
     ├── login.html
     ├── index.html
-    ├── style.css
+    ├── styles.css
     └── js/
         ├── main.js
         ├── router.js
@@ -78,13 +86,27 @@ proyecto2-libreria/
 
 ---
 
-## Funcionalidades
+## Roles en el DBMS
 
-- Login y logout de empleados con sesión JWT
-- CRUD de productos, clientes, proveedores y empleados
-- Registro de ventas con transacción explícita (BEGIN / COMMIT / ROLLBACK)
-- Reportes con JOINs, subqueries, GROUP BY, HAVING, CTE y VIEW
-- Exportar reportes a CSV
+| Rol | Permisos |
+|---|---|
+| `rol_cajero` | SELECT/INSERT/UPDATE en venta, cliente, producto |
+| `rol_vendedor` | SELECT/INSERT/UPDATE en producto, cliente, venta |
+| `rol_gerente_personal` | SELECT/INSERT/UPDATE/DELETE en empleado, rol |
+| `rol_responsable_marketing` | SELECT/INSERT/UPDATE/DELETE en producto, categoria, proveedor |
+| `rol_gerente_financiero` | SELECT en todas las tablas |
+
+---
+
+## Stored Procedures
+
+| Nombre | Tipo | Descripción |
+|---|---|---|
+| `fn_registrar_venta` | FUNCTION | registra venta completa con rollback en exception |
+| `sp_crear_o_buscar_cliente` | PROCEDURE | busca o crea cliente, parámetro INOUT |
+| `fn_verificar_stock` | FUNCTION | valida y descuenta stock |
+| `fn_cancelar_pedido` | FUNCTION | cancela pedido con validación de estado |
+| `fn_reporte_ventas_periodo` | FUNCTION | reporte ventas por rango de fechas |
 
 ---
 
@@ -94,7 +116,7 @@ proyecto2-libreria/
 docker compose down
 ```
 
-Para eliminar también los datos almacenados:
+Para eliminar datos almacenados:
 
 ```bash
 docker compose down -v
