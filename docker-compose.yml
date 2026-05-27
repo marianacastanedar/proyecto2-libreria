@@ -6,15 +6,12 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./database:/docker-entrypoint-initdb.d
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5434:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
+    networks:
+      - default
 
   backend:
     build: ./backend
@@ -24,11 +21,14 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${DB_HOST}:5432/${POSTGRES_DB}
+      JWT_SECRET: ${JWT_SECRET}
     ports:
       - "3000:3000"
     depends_on:
-      db:
-        condition: service_healthy
+      - db
+    networks:
+      - default
 
   frontend:
     build: ./frontend
@@ -36,6 +36,12 @@ services:
       - "8888:80"
     depends_on:
       - backend
+    networks:
+      - default
 
 volumes:
   postgres_data:
+
+networks:
+  default:
+    name: bookinn-network

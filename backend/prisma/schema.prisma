@@ -1,0 +1,138 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Rol {
+  id        Int        @id @default(autoincrement())
+  nombre    String     @db.VarChar(50)
+  horario   String     @db.VarChar(100)
+  sueldo    Decimal    @db.Decimal(10, 2)
+  empleados Empleado[]
+
+  @@map("rol")
+}
+
+model Empleado {
+  id        Int     @id @default(autoincrement())
+  nombre    String  @db.VarChar(100)
+  apellido  String  @db.VarChar(100)
+  direccion String? @db.VarChar(200)
+  password  String  @db.VarChar(255)
+  id_rol    Int
+  rol       Rol     @relation(fields: [id_rol], references: [id])
+  ventas    Venta[]
+
+  @@map("empleado")
+}
+
+model Cliente {
+  id        Int     @id @default(autoincrement())
+  nit       String  @db.VarChar(20)
+  nombre    String  @db.VarChar(100)
+  direccion String? @db.VarChar(200)
+  ventas    Venta[]
+
+  @@map("cliente")
+}
+
+model Proveedor {
+  id        Int               @id @default(autoincrement())
+  nombre    String            @db.VarChar(100)
+  telefono  String?           @db.VarChar(20)
+  correo    String?           @db.VarChar(100)
+  direccion String?           @db.VarChar(200)
+  pedidos   PedidoProveedor[]
+
+  @@map("proveedor")
+}
+
+model Categoria {
+  id        Int                 @id @default(autoincrement())
+  nombre    String              @db.VarChar(100)
+  productos ProductoCategoria[]
+
+  @@map("categoria")
+}
+
+model Producto {
+  id              Int                 @id @default(autoincrement())
+  nombre          String              @db.VarChar(200)
+  autor           String?             @db.VarChar(100)
+  isbn            String?             @db.VarChar(20)
+  editorial       String?             @db.VarChar(100)
+  anio            Int?
+  idioma          String?             @db.VarChar(50)
+  num_paginas     Int?
+  precio          Decimal             @db.Decimal(10, 2)
+  stock           Int
+  categorias      ProductoCategoria[]
+  detalles_venta  DetalleVenta[]
+  detalles_pedido DetallePedido[]
+
+  @@map("producto")
+}
+
+model ProductoCategoria {
+  id_producto  Int
+  id_categoria Int
+  producto     Producto  @relation(fields: [id_producto], references: [id])
+  categoria    Categoria @relation(fields: [id_categoria], references: [id])
+
+  @@id([id_producto, id_categoria])
+  @@map("producto_categoria")
+}
+
+model Venta {
+  id          Int          @id @default(autoincrement())
+  fecha       DateTime     @default(now())
+  metodo_pago String       @db.VarChar(50)
+  subtotal    Decimal      @db.Decimal(10, 2)
+  total       Decimal      @db.Decimal(10, 2)
+  id_empleado Int
+  id_cliente  Int
+  empleado    Empleado     @relation(fields: [id_empleado], references: [id])
+  cliente     Cliente      @relation(fields: [id_cliente], references: [id])
+  detalles    DetalleVenta[]
+
+  @@map("venta")
+}
+
+model DetalleVenta {
+  id              Int      @id @default(autoincrement())
+  cantidad        Int
+  precio_unitario Decimal  @db.Decimal(10, 2)
+  id_venta        Int
+  id_producto     Int
+  venta           Venta    @relation(fields: [id_venta], references: [id])
+  producto        Producto @relation(fields: [id_producto], references: [id])
+
+  @@map("detalle_venta")
+}
+
+model PedidoProveedor {
+  id           Int             @id @default(autoincrement())
+  fecha        DateTime        @default(now())
+  estado       String          @db.VarChar(20)
+  id_proveedor Int
+  proveedor    Proveedor       @relation(fields: [id_proveedor], references: [id])
+  detalles     DetallePedido[]
+
+  @@map("pedido_proveedor")
+}
+
+model DetallePedido {
+  id              Int             @id @default(autoincrement())
+  cantidad        Int
+  precio_unitario Decimal         @db.Decimal(10, 2)
+  id_pedido       Int
+  id_producto     Int
+  pedido          PedidoProveedor @relation(fields: [id_pedido], references: [id])
+  producto        Producto        @relation(fields: [id_producto], references: [id])
+
+  @@map("detalle_pedido")
+}

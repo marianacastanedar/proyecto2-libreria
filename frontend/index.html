@@ -8,21 +8,20 @@
 </head>
 <body>
   <div class="app-layout">
-
-    <!-- Sidebar -->
     <nav class="sidebar">
       <div class="sidebar-brand">bookinn.</div>
-      <a class="nav-item" id="nav-dashboard"    onclick="navegarADashboard()">Inicio</a>
-      <a class="nav-item" id="nav-productos"    onclick="navegarAProductos()">Productos</a>
-      <a class="nav-item" id="nav-clientes"     onclick="navegarAClientes()">Clientes</a>
-      <a class="nav-item" id="nav-ventas"       onclick="navegarAVentas()">Ventas</a>
-      <a class="nav-item" id="nav-proveedores"  onclick="navegarAProveedores()">Proveedores</a>
-      <a class="nav-item" id="nav-empleados"    onclick="navegarAEmpleados()">Empleados</a>
-      <a class="nav-item" id="nav-reportes"     onclick="navegarAReportes()">Reportes</a>
+      <a class="nav-item" id="nav-dashboard"   onclick="navegarADashboard()">Inicio</a>
+      <a class="nav-item" id="nav-productos"   onclick="navegarAProductos()">Productos</a>
+      <a class="nav-item" id="nav-clientes"    onclick="navegarAClientes()">Clientes</a>
+      <a class="nav-item" id="nav-ventas"      onclick="navegarAVentas()">Ventas</a>
+      <a class="nav-item" id="nav-proveedores" onclick="navegarAProveedores()">Proveedores</a>
+      <a class="nav-item" id="nav-empleados"   onclick="navegarAEmpleados()">Empleados</a>
+      <a class="nav-item" id="nav-reportes"    onclick="navegarAReportes()">Reportes</a>
       <div class="sidebar-footer">
         <div class="nav-item" style="flex-direction:column;align-items:flex-start;gap:0.2rem;cursor:default;">
           <span style="font-size:0.75rem;color:var(--light)">Sesión activa</span>
           <span id="sidebar-nombre" style="font-size:0.85rem;color:var(--white);font-weight:600"></span>
+          <span id="sidebar-rol"    style="font-size:0.75rem;color:var(--light);font-style:italic"></span>
         </div>
         <div class="nav-item" onclick="logout()" style="color:#ff8080;margin-top:0.5rem;">
           Cerrar sesión
@@ -30,9 +29,8 @@
       </div>
     </nav>
 
-    <!-- Main content -->
     <main class="main-content">
-
+      <div id="alert-global" class="alert" style="margin-bottom:1rem"></div>
       <div id="vista-dashboard"   style="display:none"></div>
       <div id="vista-productos"   style="display:none"></div>
       <div id="vista-clientes"    style="display:none"></div>
@@ -41,11 +39,9 @@
       <div id="vista-empleados"   style="display:none"></div>
       <div id="vista-reportes"    style="display:none"></div>
 
-      <!-- Modal global -->
       <div class="modal-overlay" id="modal-global">
         <div class="modal" id="modal-contenido"></div>
       </div>
-
     </main>
   </div>
 
